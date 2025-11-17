@@ -21,17 +21,42 @@ interface RuleSetLoader {
   query?: RuleSetQuery | undefined
 }
 
+/**
+ * 1. 找到vue-loader的匹配规则，找不到就报错， 同时注入全局变量，告诉vue-loader插件已安装
+ * 2. 克隆，修改匹配规则， 因为vue-loader会将vue文件的导入转换为xxx.vue?vue&type=template&index=0&id=xxx的形式
+ *  2.1 克隆所有非vue-loader规则，用于处理上一步生成 template 和 js/ts文件
+ *  2.2 添加templateLoader规则，用于处理template文件
+ * 3.
+ */
 class VueLoaderPlugin {
   static NS = NS
 
   apply(compiler: Compiler) {
+    /**
+     * compiler：编译器，代表整个webpack环境 是webpack的实例
+     * 1. 可以访问和修改webpack中的所有配置 在webpack.config.js中的所有配置和默认配置都可以访问到
+     * 2. 监听webpackde编译过程中的生命周期钩子 compile 编译开始，compilation 创建compilation, make 开始构建模块， emit 生成资源前，done 构建完成， watchRun watch模式运行时
+     * 3. 可以访问webpack内部的api,
+     */
     // inject NS for plugin installation check in the main loader
     compiler.hooks.compilation.tap(id, (compilation) => {
+      /**
+       * tap（pluginName, fuction）
+       * function 回调函数
+       * pluginName 插件名称 可以给webpack进行性能分析，看到每个插件运行的时间，以及在哪个插件中报错
+       *
+       * compilation 编译实例，代表一次完整的构建过程
+       * normalModuleLoader 模块执行之前
+       */
       compilation.hooks.normalModuleLoader.tap(id, (loaderContext: any) => {
+        /**
+         * 在loader执行前 注入NS标记，用于检测插件是否安装，还可以修改全局变量loaderContext的上下文
+         */
         loaderContext[NS] = true
       })
     })
 
+    /** 获取webpack 的module.rules配置 */
     const rawRules = compiler.options.module!.rules
     // use webpack's RuleSet utility to normalize user rules
     const rules = new RuleSet(rawRules).rules as RuleSetRule[]
@@ -115,9 +140,13 @@ class VueLoaderPlugin {
     // replace original rules
     compiler.options.module!.rules = [
       pitcher,
+      /** 克隆的js规则 */
       ...jsRulesForRenderFn,
+      /** templateLoader规则 */
       templateCompilerRule,
+      /** 克隆的非vue-loader规则 */
       ...clonedRules,
+      /** 原来的规则 */
       ...rules,
     ]
 

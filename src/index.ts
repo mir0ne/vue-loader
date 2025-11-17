@@ -67,6 +67,7 @@ const { parse } = compiler
 const exportHelperPath = require.resolve('./exportHelper')
 
 export default function loader(
+  // ts 语法，打包后会消失， 主要是兼容webpack中 loader.call(loaderContext, source) 这种调用方式
   this: LoaderContext<VueLoaderOptions>,
   source: string
 ) {
@@ -90,11 +91,17 @@ export default function loader(
   const stringifyRequest = (r: string) => _stringifyRequest(loaderContext, r)
 
   const {
+    // "development" | "production" | "none"
     mode,
+    // "web" | "webworker" | "node" | "node-webkit" | "electron-main" | "electron-renderer" | "async-node" | false
     target,
+    // boolean 是否启用sourcemap
     sourceMap,
+    // string 根目录
     rootContext,
+    // string 资源路径
     resourcePath,
+    // string 资源查询
     resourceQuery: _resourceQuery = '',
     _compiler,
   } = loaderContext

@@ -237,10 +237,12 @@ function cloneRule(rule: RuleSetRule) {
   let currentResource: string
   const res = {
     ...rule,
+    /** 匹配资源路径， 可以是别名或者matchResource路径  'src/components/HelloWorld.vue' */
     resource: (resource: string) => {
       currentResource = resource
       return true
     },
+    /** 匹配资源查询  '?vue&lang=ts'*/
     resourceQuery: (query: string) => {
       const parsed = qs.parse(query.slice(1))
       if (parsed.vue == null) {
@@ -258,6 +260,14 @@ function cloneRule(rule: RuleSetRule) {
       }
       return true
     },
+    /**
+     * 匹配资源片段
+     * resourceFragment '#inline'
+     */
+    /**
+     * 匹配真实资源路径 总是文件真实路径
+     * realResource 'src/components/HelloWorld.vue'
+     */
   }
 
   if (rule.rules) {

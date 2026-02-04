@@ -19,6 +19,18 @@ const isNotPitcher = (l: Loader) => l.path !== __filename
 
 const pitcher: LoaderDefinitionFunction = (code) => code
 
+/**
+ *
+ * pitch 函数的作用，通过pitch函数，可以拦截到vue文件的请求，然后进行处理
+ * 1. 拦截到vue文件的请求后，会进行处理
+ * 2. 处理后，会返回处理后的结果
+ * 3. 处理后的结果会传递给下一个loader
+ * 4. 下一个loader会继续处理处理后的结果
+ * 5. 直到最后一个loader处理完后，会返回处理后的结果
+ * 6. 处理后的结果会传递给webpack
+ * 7. webpack会继续处理处理后的结果
+ * @returns
+ */
 // This pitching loader is responsible for intercepting all vue block requests
 // and transform it into appropriate requests.
 export const pitch = function () {
